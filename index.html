@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=EB+Garamond:ital@0;1&family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#3a1530;
+    --burgundy:#6b2039;
+    --rose:#c97b8b;
+    --blush:#f3d7d3;
+    --cream:#faf4ec;
+    --gold:#c79a4b;
+    --ink:#2c1620;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--cream);
+    font-family:'EB Garamond', serif;
+    color:var(--ink);
+    overflow-x:hidden;
+  }
+
+  /* ============ CUSTOM CONTENT — EDIT DI SINI ============ */
+  /* Ganti nama, judul, dan isi surat di bagian HTML di bawah. */
+
+  h1,h2,.serif{
+    font-family:'Cormorant Garamond', serif;
+  }
+
+  .script{
+    font-family:'Dancing Script', cursive;
+  }
+
+  /* ---------- Floating petals background ---------- */
+  #petals{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    overflow:hidden;
+  }
+  .petal{
+    position:absolute;
+    top:-5%;
+    font-size:18px;
+    color:var(--rose);
+    opacity:.55;
+    animation: fall linear infinite;
+    user-select:none;
+  }
+  @keyframes fall{
+    0%   { transform: translateY(-10vh) translateX(0) rotate(0deg); }
+    100% { transform: translateY(110vh) translateX(var(--drift,20px)) rotate(360deg); }
+  }
+
+  /* ---------- Balon (muncul sekilas saat surat dibuka) ---------- */
+  #balloons{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:15;
+    overflow:hidden;
+  }
+  .balloon{
+    position:absolute;
+    bottom:-140px;
+    width:46px;
+    height:58px;
+    border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
+    opacity:0;
+    animation: balloon-rise 2.4s linear forwards;
+  }
+  .balloon::before{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:100%;
+    transform: translateX(-50%);
+    border-left:5px solid transparent;
+    border-right:5px solid transparent;
+    border-top:7px solid var(--balloon-color, var(--rose));
+    filter: brightness(.85);
+  }
+  .balloon::after{
+    content:"";
+    position:absolute;
+    left:50%;
+    top:100%;
+    width:1px;
+    height:70px;
+    background: rgba(58,21,48,.35);
+    transform: translateX(-50%) translateY(6px);
+  }
+  @keyframes balloon-rise{
+    0%{
+      transform: translateY(0) translateX(0) rotate(-3deg);
+      opacity:0;
+    }
+    10%{
+      opacity:1;
+    }
+    88%{
+      opacity:1;
+    }
+    100%{
+      transform: translateY(-115vh) translateX(var(--sway, 18px)) rotate(3deg);
+      opacity:0;
+    }
+  }
+
+  /* ---------- Scene 1: Envelope ---------- */
+  #envelope-scene{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:2;
+    text-align:center;
+    padding:24px;
+    transition: opacity 1s ease, visibility 1s ease;
+  }
+  #envelope-scene.hidden{
+    opacity:0;
+    visibility:hidden;
+    position:fixed;
+    inset:0;
+  }
+
+  .to-label{
+    font-family:'Dancing Script', cursive;
+    font-size:26px;
+    font-weight:700;
+    letter-spacing:.3px;
+    color:var(--burgundy);
+    margin-bottom:28px;
+  }
+
+  .envelope{
+    position:relative;
+    width:min(320px, 78vw);
+    height:calc(min(320px, 78vw) * 0.62);
+    cursor:pointer;
+    filter: drop-shadow(0 18px 30px rgba(107,32,57,.18));
+  }
+  .envelope-body{
+    position:absolute;
+    inset:0;
+    background: var(--burgundy);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .envelope-body::before,
+  .envelope-body::after{
+    content:"";
+    position:absolute;
+    top:0;
+    width:0; height:0;
+    border-style:solid;
+  }
+  .envelope-shade{
+    position:absolute;
+    inset:0;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.10), rgba(0,0,0,.12));
+  }
+  .envelope-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:58%;
+    background: var(--rose);
+    clip-path: polygon(0 0, 100% 0, 50% 78%);
+    transform-origin: top center;
+    transition: transform .7s cubic-bezier(.6,-0.2,.3,1.2);
+    z-index:3;
+    box-shadow: inset 0 -6px 12px rgba(58,21,48,.15);
+  }
+  .envelope.open .envelope-flap{
+    transform: rotateX(180deg);
+  }
+  .heart-seal{
+    position:absolute;
+    top:38%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    font-size:26px;
+    z-index:4;
+    color:var(--gold);
+    transition: opacity .3s ease .1s;
+  }
+  .envelope.open .heart-seal{ opacity:0; }
+
+  .letter-peek{
+    position:absolute;
+    left:6%;
+    right:6%;
+    bottom:6%;
+    height:70%;
+    background: var(--cream);
+    border-radius:4px;
+    transform: translateY(12%);
+    transition: transform .8s ease .25s;
+    z-index:2;
+  }
+  .envelope.open .letter-peek{
+    transform: translateY(-38%);
+  }
+
+  .hint{
+    margin-top:26px;
+    font-size:15px;
+    font-style:italic;
+    color:var(--burgundy);
+    opacity:.75;
+    letter-spacing:.3px;
+    animation: pulse 2.2s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ opacity:.4; }
+    50%{ opacity:.9; }
+  }
+
+  /* ---------- Scene 2: Letter ---------- */
+  #letter-scene{
+    position:relative;
+    z-index:2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 90px 20px 140px;
+    opacity:0;
+    transform: translateY(24px);
+    transition: opacity 1s ease .3s, transform 1s ease .3s;
+  }
+  #letter-scene.visible{
+    opacity:1;
+    transform: translateY(0);
+  }
+
+  .letter-card{
+    max-width:560px;
+    width:100%;
+    background: #fffdfb;
+    border:1px solid rgba(107,32,57,.12);
+    border-radius:2px;
+    padding: 56px 44px;
+    box-shadow: 0 30px 60px rgba(58,21,48,.12);
+    position:relative;
+  }
+  .letter-card::before{
+    content:"";
+    position:absolute;
+    top:14px; left:14px; right:14px; bottom:14px;
+    border:1px solid rgba(199,154,75,.35);
+    pointer-events:none;
+  }
+
+  .photo-frame{
+    width: 190px;
+    aspect-ratio: 4 / 5;
+    margin: 0 auto 26px;
+    position: relative;
+    border-radius: 8px;
+    padding: 10px 10px 10px;
+    background: #fffdfb;
+    box-shadow:
+      0 18px 34px rgba(58,21,48,.22),
+      0 2px 0 rgba(199,154,75,.5);
+    transform: rotate(-3deg);
+    transition: transform .4s ease;
+  }
+  .photo-frame:hover{ transform: rotate(0deg) scale(1.02); }
+
+  .photo-frame::before{
+    content:"";
+    position:absolute;
+    inset:5px;
+    border:1px solid rgba(199,154,75,.55);
+    border-radius:4px;
+    pointer-events:none;
+    z-index:2;
+  }
+
+  .photo-frame img{
+    width:100%;
+    height:100%;
+    object-fit: cover;
+    border-radius: 4px;
+    display:block;
+    background: linear-gradient(135deg, var(--blush), var(--rose));
+  }
+
+  .photo-heart{
+    position:absolute;
+    bottom:-14px;
+    right:-10px;
+    width:34px;
+    height:34px;
+    background: var(--gold);
+    color:#fff;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:15px;
+    box-shadow: 0 6px 14px rgba(58,21,48,.3);
+    z-index:3;
+  }
+  .letter-title{
+    font-family:'Dancing Script', cursive;
+    font-size:22px;
+    font-weight:500;
+    color:var(--rose);
+    text-align:center;
+    margin:0 0 2px;
+  }
+  .letter-heading{
+    font-size:clamp(32px,6.5vw,46px);
+    font-weight:600;
+    font-style:italic;
+    color:var(--burgundy);
+    text-align:center;
+    margin:6px 0 30px;
+    line-height:1.2;
+  }
+
+  .letter-body p{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:22px;
+    line-height:1.85;
+    letter-spacing:.2px;
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+  .letter-body p:first-of-type::first-letter{
+    font-family:'Cormorant Garamond', serif;
+    font-style:italic;
+    font-size:58px;
+    float:left;
+    line-height:.7;
+    padding:10px 12px 0 0;
+    color:var(--burgundy);
+    font-weight:600;
+  }
+
+  .signature{
+    margin-top:32px;
+    text-align:right;
+    font-family:'Dancing Script', cursive;
+    font-size:32px;
+    font-weight:700;
+    color:var(--burgundy);
+  }
+
+  .divider{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    margin: 34px 0 10px;
+    color:var(--rose);
+  }
+  .divider::before, .divider::after{
+    content:"";
+    height:1px;
+    width:60px;
+    background: rgba(199,154,75,.4);
+  }
+
+  @media (max-width: 480px){
+    #letter-scene{ padding: 60px 14px 110px; }
+    .letter-card{ padding: 40px 24px; }
+    .letter-heading{ font-size: clamp(26px, 8vw, 36px); }
+    .letter-body p{ font-size: 19px; line-height:1.75; }
+    .to-label{ font-size:22px; }
+    .signature{ font-size:28px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .petal, .hint{ animation: none !important; }
+    .envelope-flap, .letter-peek, #letter-scene{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div id="petals"></div>
+<div id="balloons"></div>
+
+<!-- ============ SCENE 1 : AMPLOP ============ -->
+<section id="envelope-scene">
+  <p class="to-label">🤭❤️🫣</p>
+
+  <div class="envelope" id="envelope">
+    <div class="envelope-body">
+      <div class="envelope-shade"></div>
+    </div>
+    <div class="letter-peek"></div>
+    <div class="envelope-flap"></div>
+    <div class="heart-seal">♥</div>
+  </div>
+
+  <p class="hint">ketuk amplop untuk membuka</p>
+</section>
+
+<!-- ============ SCENE 2 : SURAT ============ -->
+<section id="letter-scene">
+  <div class="letter-card">
+    <!--
+      FOTO DIA — ganti src di bawah ini dengan nama file fotomu, contoh:
+      src="foto-dia.jpg"  (letakkan file foto di folder yang sama dengan file ini)
+      UKURAN FOTO TERBAIK: rasio potret 4:5 (contoh 1000 x 1250 piksel,
+      atau kelipatannya seperti 1200x1500). Rasio ini pas dengan bingkai
+      dan membuat wajah tetap terlihat penuh tanpa terpotong aneh.
+      Pilih foto dengan wajah/objek utama berada di TENGAH foto.
+    -->
+    <div class="photo-frame">
+      <img src="Sayangkuu.jpg" alt="Foto dia" onerror="this.style.background='linear-gradient(135deg, var(--blush), var(--rose))'; this.removeAttribute('src');">
+      <div class="photo-heart">♥</div>
+    </div>
+
+    <p class="letter-title">For My Sweetheart</p>
+    <h1 class="letter-heading">🥳Happy Birthday🥳</h1>
+
+    <div class="letter-body">
+      <!-- Ganti isi surat di bawah ini dengan kata-katamu sendiri -->
+      <p>Halo sayangkuuu, selamat ulang tahun yaaa, semoga aku jadi yang pertama ngucapin selamat ulang tahun ke kamu. Di pesan ini aku ngga bakal panjang panjang ko, aku cuma mau ngucapin selamat ulang tahun buat manusia yang paling cantiiikkk seduniaaa. Siapa lagi kalau bukan kamu, iya kamu, yang fotonya aku pajang di atas, yang kalau senyum tuh pasti manis banget, ngga ada yang lebih manis lagi deh selain senyuman dia hehe .</p>
+      <p>Panjang umur dan sehat selalu yah sayangkuuu, aku do'a-in, semoga di umur mu yang ke 18 tahun ini, banyak dari impian mu itu akan terwujud. Aku do'a-in juga semoga di setiap jalan mu untuk capai semua impian mu itu di berikan kemudahan di setiap jalannya.</p>
+      <p>Sekali lagi selamat ulang tahun yah sayanggkuuu, Always be happy my loveee 🤗</p>
+    </div>
+
+    <div class="divider">♥</div>
+    <p class="signature">— Your Boyfriend</p>
+  </div>
+</section>
+
+<!--
+  MUSIK BACKGROUND — otomatis terputar berulang (loop) begitu amplop dibuka,
+  tanpa tombol apa pun. Untuk mengganti lagunya, isi DEFAULT_SONG_URL di bagian
+  <script> di bawah dengan path/URL file mp3-mu, misalnya:
+  DEFAULT_SONG_URL = "musik-kita.mp3";  (letakkan file mp3 di folder yang sama dengan file ini)
+-->
+<audio id="bgm" loop preload="auto"></audio>
+
+<!--
+  REKAMAN SUARAMU — muncul otomatis 3 detik setelah amplop dibuka.
+  Saat suara ini terputar, musik utama akan meredup, lalu kembali normal
+  begitu rekaman selesai. Isi VOICE_URL di bagian <script> di bawah dengan
+  path/URL file rekamanmu, misalnya:
+  DEFAULT_VOICE_URL = "suaraku.mp3";  (letakkan file di folder yang sama dengan file ini)
+-->
+<audio id="voice" preload="auto"></audio>
+
+<script>
+  const DEFAULT_SONG_URL  = "Monokrom.mp3"; // <-- isi path/URL musik utama, contoh: "musik-kita.mp3"
+  const DEFAULT_VOICE_URL = "HAPPYYY BIRTHDAYYY.mp3"; // <-- isi path/URL rekaman suaramu, contoh: "suaraku.mp3"
+
+  const MAIN_VOLUME  = 1;    // volume normal musik utama (0 - 1)
+  const DUCK_VOLUME  = 0.15; // volume musik utama saat suaramu terputar
+  const VOICE_DELAY  = 3000; // jeda sebelum suaramu muncul, dalam milidetik
+  const FADE_STEP_MS = 40;   // kehalusan transisi volume
+
+  const envelope     = document.getElementById('envelope');
+  const envScene     = document.getElementById('envelope-scene');
+  const letterScene  = document.getElementById('letter-scene');
+  const bgm          = document.getElementById('bgm');
+  const voice        = document.getElementById('voice');
+
+  if (DEFAULT_SONG_URL)  bgm.src = DEFAULT_SONG_URL;
+  if (DEFAULT_VOICE_URL) voice.src = DEFAULT_VOICE_URL;
+
+  bgm.volume = MAIN_VOLUME;
+
+  // Transisi volume musik utama secara halus (fade), bukan langsung berubah
+  let fadeTimer = null;
+  function fadeMainVolumeTo(target, durationMs){
+    if (fadeTimer) clearInterval(fadeTimer);
+    const startVolume = bgm.volume;
+    const steps = Math.max(1, Math.round(durationMs / FADE_STEP_MS));
+    const stepAmount = (target - startVolume) / steps;
+    let count = 0;
+    fadeTimer = setInterval(()=>{
+      count++;
+      const next = bgm.volume + stepAmount;
+      bgm.volume = Math.min(1, Math.max(0, next));
+      if (count >= steps){
+        bgm.volume = target;
+        clearInterval(fadeTimer);
+      }
+    }, FADE_STEP_MS);
+  }
+
+  function playVoiceRecording(){
+    if (!voice.src) return;
+    fadeMainVolumeTo(DUCK_VOLUME, 500);   // musik utama meredup
+    voice.currentTime = 0;
+    voice.play().catch(()=>{});
+  }
+
+  voice.addEventListener('ended', ()=>{
+    fadeMainVolumeTo(MAIN_VOLUME, 700);   // musik utama kembali normal
+  });
+
+  // memastikan loop tanpa jeda walau ada hambatan browser tertentu
+  bgm.addEventListener('ended', ()=>{
+    bgm.currentTime = 0;
+    bgm.play().catch(()=>{});
+  });
+
+  // coba autoplay begitu halaman dimuat (berhasil di sebagian browser)
+  window.addEventListener('load', ()=>{
+    if (bgm.src) bgm.play().catch(()=>{ /* menunggu ketukan amplop */ });
+  });
+
+  // Balon bermunculan sekilas saat surat dibuka
+  const balloonContainer = document.getElementById('balloons');
+  const balloonColors = ['#e6483e','#f2b705','#3aa655','#3d7fd6','#e85aa0','#f97316','#22b8b0','#9b59d6'];
+
+  function spawnBalloons(){
+    const count = 30;
+    for(let i=0;i<count;i++){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const color = balloonColors[Math.floor(Math.random()*balloonColors.length)];
+      b.style.setProperty('--balloon-color', color);
+      b.style.background = color;
+      // sebar merata dari kanan ke kiri layar, dengan sedikit variasi acak
+      const spread = (i / (count - 1)) * 100;
+      const jitter = (Math.random()*6) - 3;
+      b.style.left = Math.min(98, Math.max(0, spread + jitter)) + 'vw';
+      b.style.setProperty('--sway', (10 + Math.random()*30) + 'px');
+      b.style.animationDelay = (Math.random()*0.35) + 's';
+      b.style.animationDuration = (2.0 + Math.random()*0.6) + 's';
+      balloonContainer.appendChild(b);
+    }
+    // bersihkan setelah animasi selesai, karena hanya tampil sekilas
+    setTimeout(()=>{ balloonContainer.innerHTML = ''; }, 3000);
+  }
+
+  // Buka amplop — ketukan ini juga jadi pemicu resmi bagi browser untuk
+  // mengizinkan audio diputar otomatis jika langkah di atas diblokir
+  envelope.addEventListener('click', ()=>{
+    if(envelope.classList.contains('open')) return;
+    envelope.classList.add('open');
+
+    if (bgm.src && bgm.paused) bgm.play().catch(()=>{});
+
+    setTimeout(()=>{
+      envScene.classList.add('hidden');
+      letterScene.classList.add('visible');
+      spawnBalloons();
+    }, 900);
+
+    setTimeout(playVoiceRecording, VOICE_DELAY);
+  });
+
+  // Kelopak/hati melayang di background
+  const petalContainer = document.getElementById('petals');
+  const petalChars = ['♥','❀','✿'];
+  const petalCount = window.innerWidth < 500 ? 12 : 20;
+
+  for(let i=0;i<petalCount;i++){
+    const p = document.createElement('span');
+    p.className = 'petal';
+    p.textContent = petalChars[Math.floor(Math.random()*petalChars.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.setProperty('--drift', (Math.random()*80-40) + 'px');
+    p.style.fontSize = (14 + Math.random()*14) + 'px';
+    const duration = 9 + Math.random()*10;
+    p.style.animationDuration = duration + 's';
+    p.style.animationDelay = (Math.random()*duration*-1) + 's';
+    petalContainer.appendChild(p);
+  }
+</script>
+
+</body>
+</html>
